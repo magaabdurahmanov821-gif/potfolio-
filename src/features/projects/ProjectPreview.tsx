@@ -1,0 +1,14 @@
+import type { Project } from '../../data/projects'
+
+export function ProjectPreview({ project }: { project: Project }) {
+  const colors = {
+    cyan: { line: 'bg-cyan', soft: 'bg-cyan/15', text: 'text-cyan', fill: 'bg-cyan' },
+    violet: { line: 'bg-violet', soft: 'bg-violet/15', text: 'text-violet', fill: 'bg-violet' },
+    acid: { line: 'bg-acid', soft: 'bg-acid/15', text: 'text-acid', fill: 'bg-acid' },
+  }[project.accent]
+
+  if (project.id === 'tempo') return <div className="relative h-full overflow-hidden bg-[#ded9d0] p-4 text-[#272521]"><p className="font-serif text-[clamp(1.8rem,3vw,3.2rem)] leading-none">Spaces with<br />a soul.</p><div className="absolute bottom-4 left-4 right-4 h-[52%] bg-[linear-gradient(135deg,#7c8877_0%,#b7a99d_42%,#575c59_43%,#343a34_100%)]" /><span className="absolute bottom-7 right-7 text-[9px] tracking-widest">TEMPO © 2025</span></div>
+  if (project.id === 'mochi') return <div className="flex h-full items-center justify-center bg-[#131315]"><div className="relative h-[78%] w-[47%] rounded-[1.5rem] border-[5px] border-zinc-700 bg-[#222226] p-3 shadow-2xl"><div className="flex h-4 items-center justify-center"><i className="size-1 rounded-full bg-zinc-500" /></div><div className="mt-2 rounded-xl bg-[#29292e] p-2"><div className="mb-3 size-7 rounded-lg bg-acid" /><div className="h-2 w-2/3 rounded-full bg-white/70" /><div className="mt-1 h-1.5 w-1/2 rounded-full bg-white/20" /></div><div className="mt-2 h-8 rounded-xl bg-acid" /></div></div>
+  if (project.id === 'terminal') return <div className="h-full bg-[#0c1111] p-4 font-mono text-[9px] leading-loose text-cyan/70"><p><span className="text-violet">$</span> npm run build</p><p className="text-zinc-500">▲ compiled successfully</p><p className="mt-4 text-zinc-500">./components/terminal.tsx</p><p>const interface = <span className="text-acid">future</span>;</p><div className="mt-3 h-px w-full bg-cyan/30" /><p className="mt-2 animate-pulse">_</p></div>
+  return <div className="relative h-full overflow-hidden bg-[#111116] p-4"><div className="absolute -right-6 -top-6 size-44 rounded-full blur-2xl" style={{ background: project.accent === 'cyan' ? '#5eead433' : '#a78bfa33' }} /><div className="relative rounded-lg border border-white/10 bg-white/[.04] p-3"><div className="flex justify-between"><div className={`size-6 rounded-md ${colors.soft}`} /><span className="text-[8px] text-zinc-500">OVERVIEW</span></div><div className="mt-5 flex items-end gap-1">{[36, 56, 42, 76, 61, 88, 70].map((n, i) => <i className={`w-full rounded-sm ${colors.fill}`} style={{ height: `${n}%`, opacity: .25 + i / 12 }} key={i} />)}</div></div><div className="relative mt-2 grid grid-cols-2 gap-2"><div className="h-10 rounded-lg border border-white/10 bg-white/[.04]" /><div className="h-10 rounded-lg border border-white/10 bg-white/[.04]" /></div><span className={`absolute bottom-4 right-4 mono text-[9px] ${colors.text}`}>LIVE DATA</span></div>
+}
