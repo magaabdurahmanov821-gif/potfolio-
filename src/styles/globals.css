@@ -19,6 +19,10 @@
 html { scroll-behavior: smooth; background: var(--page-bg); }
 body { margin: 0; min-width: 320px; background: var(--page-bg); overflow-x: hidden; }
 a, button { -webkit-tap-highlight-color: transparent; }
+@media (hover: hover) {
+  a, button { transition: opacity .16s ease; }
+  a:hover, button:hover { opacity: .82; }
+}
 ::selection { background: var(--page-fg); color: var(--page-bg); }
 
 .theme-dark {

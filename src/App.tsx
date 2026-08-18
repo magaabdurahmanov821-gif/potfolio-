@@ -1,11 +1,12 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, type Variants, useMotionValue, useScroll, useSpring } from 'framer-motion'
 import { ArrowDownRight, ArrowUpRight, AtSign, Moon, Send, Sun, Volume2, VolumeX } from 'lucide-react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { TextHoverEffect } from './components/ui/TextHoverEffect'
 import { InstagramIcon } from './components/ui/instagram-icon'
 import { TerminalWidget } from './components/ui/terminal-widget'
 import { QuickContactModal } from './components/ui/QuickContactModal'
+import { TiltProjectCard } from './components/ui/TiltProjectCard'
 import { TechMetrics } from './components/sections/TechMetrics'
 import { FAQSection } from './components/sections/FAQSection'
 import { getSoundMuted, playClick, playToggle, setSoundMuted } from './lib/sound'
@@ -57,6 +58,31 @@ const reveal = {
   visible: { opacity: 1, y: 0 },
 }
 
+const heroStagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: .16, delayChildren: .12 } },
+}
+
+const heroReveal: Variants = {
+  hidden: { opacity: 0, y: 64, clipPath: 'inset(0 0 100% 0)' },
+  visible: { opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0)', transition: { duration: .95, ease: [0.22, 1, 0.36, 1] } },
+}
+
+const letterStagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: .075 } },
+}
+
+const letterReveal: Variants = {
+  hidden: (index: number) => ({ opacity: 0, y: index < 5 ? -92 : 92, rotate: index < 5 ? -4 : 4 }),
+  visible: { opacity: 1, y: 0, rotate: 0, transition: { duration: .86, ease: [0.22, 1, 0.36, 1] } },
+}
+
+const sectionReveal = {
+  hidden: { opacity: 0, y: 32 },
+  visible: { opacity: 1, y: 0 },
+}
+
 export function App() {
   const loader = <main className="page-root grid min-h-screen place-items-center font-mono text-xs">Loading…</main>
   return <BrowserRouter><Routes><Route path="/" element={<Portfolio />} /><Route path="/login" element={<Suspense fallback={loader}><Login /></Suspense>} /><Route path="/admin" element={<Suspense fallback={loader}><AdminRoute /></Suspense>} /></Routes></BrowserRouter>
@@ -64,6 +90,8 @@ export function App() {
 
 function Portfolio() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => localStorage.getItem('magomed-theme') === 'dark' ? 'dark' : 'light')
+  const { scrollYProgress } = useScroll()
+  const scrollProgress = useSpring(scrollYProgress, { stiffness: 90, damping: 24, mass: .25 })
 
   useEffect(() => {
     document.documentElement.classList.toggle('theme-dark', theme === 'dark')
@@ -72,14 +100,15 @@ function Portfolio() {
 
   return (
     <main className="page-root min-h-screen overflow-hidden pb-28 md:pb-16">
+      <motion.div layoutId="scroll-frame" className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[3px] origin-left bg-[#49b56d]" style={{ scaleX: scrollProgress }} />
       <div className="page-shell">
         <Header theme={theme} onToggleTheme={() => setTheme(current => current === 'light' ? 'dark' : 'light')} />
         <Hero />
-        <ProjectsPanel />
-        <Highlights />
-        <TechMetrics />
-        <FAQSection />
-        <Footer />
+        <SectionReveal><ProjectsPanel /></SectionReveal>
+        <SectionReveal><Highlights /></SectionReveal>
+        <SectionReveal><TechMetrics /></SectionReveal>
+        <SectionReveal><FAQSection /></SectionReveal>
+        <SectionReveal><Footer /></SectionReveal>
       </div>
     </main>
   )
@@ -99,28 +128,34 @@ function Header({ theme, onToggleTheme }: { theme: 'light' | 'dark'; onToggleThe
     <header className="flex items-center justify-between py-5 sm:py-7">
       <span aria-hidden="true" />
       <div className="flex items-center gap-2">
-        <button type="button" data-sound="custom" onClick={toggleSound} className="theme-toggle group grid size-8 place-items-center rounded-full border" aria-label={muted ? 'Turn sounds on' : 'Mute sounds'} title={muted ? 'Sound on' : 'Mute sound'}>
+        <motion.button type="button" data-sound="custom" onClick={toggleSound} whileHover={{ scale: 1.05 }} whileTap={{ scale: .96 }} className="theme-toggle group grid size-8 place-items-center rounded-full border" aria-label={muted ? 'Turn sounds on' : 'Mute sounds'} title={muted ? 'Sound on' : 'Mute sound'}>
           {muted ? <VolumeX size={14} strokeWidth={2} /> : <Volume2 size={14} strokeWidth={2} />}
-        </button>
-        <button type="button" data-sound="custom" onClick={() => { playToggle(); onToggleTheme() }} className="theme-toggle group grid size-8 place-items-center rounded-full border" aria-label={theme === 'light' ? 'Switch to night mode' : 'Switch to day mode'} title={theme === 'light' ? 'Night mode' : 'Day mode'}>
+        </motion.button>
+        <motion.button type="button" data-sound="custom" onClick={() => { playToggle(); onToggleTheme() }} whileHover={{ scale: 1.05 }} whileTap={{ scale: .96 }} className="theme-toggle group grid size-8 place-items-center rounded-full border" aria-label={theme === 'light' ? 'Switch to night mode' : 'Switch to day mode'} title={theme === 'light' ? 'Night mode' : 'Day mode'}>
           {theme === 'light' ? <Moon size={13} strokeWidth={2} className="transition-transform duration-300 group-hover:rotate-[-18deg]" /> : <Sun size={14} strokeWidth={2} className="transition-transform duration-300 group-hover:rotate-45" />}
-        </button>
-        <a href="#contact" className="group inline-flex items-center gap-1 text-xs font-semibold tracking-[-.02em] transition-opacity hover:opacity-55">
+        </motion.button>
+        <motion.a href="#contact" whileHover={{ scale: 1.05 }} className="group inline-flex items-center gap-1 text-xs font-semibold tracking-[-.02em] transition-opacity hover:opacity-55">
           Contact <ArrowUpRight size={14} strokeWidth={1.8} className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-        </a>
+        </motion.a>
       </div>
     </header>
   )
 }
 
 function Hero() {
+  const pointerX = useMotionValue(0)
+  const pointerY = useMotionValue(0)
+  const parallaxX = useSpring(pointerX, { stiffness: 45, damping: 18 })
+  const parallaxY = useSpring(pointerY, { stiffness: 45, damping: 18 })
+
   return (
-    <section id="top" className="flex min-h-[400px] flex-col justify-between pb-10 pt-5 sm:min-h-[440px] sm:pt-6 lg:min-h-[465px] lg:pt-7">
-      <motion.div initial="hidden" animate="visible" variants={reveal} transition={{ duration: 0.7, delay: 0.08 }} className="mt-auto">
-        <h1 className="portfolio-heading display-type max-w-[1000px] text-[clamp(3.9rem,12vw,10.6rem)] leading-[.74] tracking-[-.092em]">
-          <span className="block">PORTFOLIO</span>
-        </h1>
-        <div className="page-line mt-10 flex items-end justify-between border-t pt-3 sm:mt-14">
+    <section id="top" className="relative flex min-h-[400px] flex-col justify-between overflow-hidden pb-10 pt-5 sm:min-h-[440px] sm:pt-6 lg:min-h-[465px] lg:pt-7" onPointerMove={event => { const bounds = event.currentTarget.getBoundingClientRect(); pointerX.set((event.clientX - bounds.left - bounds.width / 2) * .025); pointerY.set((event.clientY - bounds.top - bounds.height / 2) * .025) }} onPointerLeave={() => { pointerX.set(0); pointerY.set(0) }}>
+      <motion.div aria-hidden="true" className="pointer-events-none absolute -right-12 top-4 hidden size-64 rounded-full border border-current/10 opacity-35 md:block" style={{ x: parallaxX, y: parallaxY }} animate={{ rotate: 360 }} transition={{ rotate: { duration: 85, repeat: Infinity, ease: 'linear' } }} />
+      <motion.div initial="hidden" animate="visible" variants={heroStagger} className="mt-auto">
+        <motion.h1 variants={letterStagger} className="portfolio-heading display-type max-w-[1000px] text-[clamp(3.9rem,12vw,10.6rem)] leading-[.74] tracking-[-.092em]">
+          <span className="block">{'PORTFOLIO'.split('').map((letter, index) => <motion.span key={`${letter}-${index}`} custom={index} variants={letterReveal} className="inline-block">{letter}</motion.span>)}</span>
+        </motion.h1>
+        <motion.div variants={heroReveal} className="page-line mt-10 flex items-end justify-between border-t pt-3 sm:mt-14">
           <div className="flex items-center gap-2.5">
             <span className="page-fg-bg grid size-9 place-items-center rounded-full font-mono text-[9px] font-medium">M.D.</span>
             <span className="text-xs font-semibold tracking-[-.035em]">Magomed<br className="sm:hidden" /> Abdurahmanov</span>
@@ -129,7 +164,7 @@ function Hero() {
             <span className="relative flex size-2"><span className="absolute inset-0 animate-ping rounded-full bg-[#49b56d] opacity-70" /><span className="relative size-2 rounded-full bg-[#49b56d]" /></span>
             <span className="page-fg-border border-b pb-0.5">Available for Work</span>
           </div>
-        </div>
+        </motion.div>
       </motion.div>
     </section>
   )
@@ -147,19 +182,18 @@ function ProjectsPanel() {
             {projectFrames.map((project, index) => (
               index === projectFrames.length - 1 ? <motion.div
                 key={project.name}
-                initial={{ opacity: 0, scale: 1.03 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: index * 0.055 }}
+                initial={{ opacity: 0, y: 62, rotate: -2.5, scale: .96 }}
+                whileInView={{ opacity: 1, y: 0, rotate: 0, scale: 1 }}
+                whileHover={{ y: -6, boxShadow: '0 22px 45px rgba(0,0,0,.38)' }}
+                viewport={{ once: true, amount: .55 }}
+                transition={{ duration: .72, delay: index * .055, ease: [0.22, 1, 0.36, 1] }}
                 className="project-frame relative aspect-[1.55/1] overflow-hidden border-b border-r border-white/15"
-              ><TerminalWidget /></motion.div> : <motion.a
+              ><TerminalWidget /></motion.div> : <TiltProjectCard
                 href="#contact"
                 key={project.name}
-                initial={{ opacity: 0, scale: 1.03 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: index * 0.055 }}
                 className="project-frame group/frame relative aspect-[1.55/1] overflow-hidden border-b border-r border-white/15"
+                delay={index * .055}
+                entranceRotate={index % 2 === 0 ? 2.5 : -2.5}
               />
             ))}
           </div>
@@ -193,7 +227,7 @@ function Highlights() {
           <div className="skill-muted flex items-start justify-between font-mono text-[10px] uppercase"><span>01 / Engineering</span><ArrowDownRight size={16} /></div>
           <div className="absolute inset-x-5 bottom-5 sm:inset-x-7 sm:bottom-7">
             <p className="display-type text-[clamp(3.6rem,8.2vw,7.8rem)] leading-[.75] tracking-[-.085em]">FAST &amp;<br /><span className="skill-accent">SCALABLE</span></p>
-            <div className="skill-line mt-8 flex items-center justify-between border-t pt-3 text-[10px] font-semibold uppercase tracking-[.02em]"><span>Next</span><span>→</span></div>
+            <div className="skill-line mt-8 flex items-center justify-between border-t pt-3 text-[10px] font-semibold uppercase tracking-[.02em]"><motion.span whileHover={{ y: -3, backgroundColor: 'rgba(73,181,109,.18)' }} transition={{ duration: .16 }} className="inline-block rounded px-1.5 py-1">Next</motion.span><span>→</span></div>
           </div>
         </motion.article>
       </div>
@@ -205,13 +239,17 @@ function Footer() {
   return (
     <footer id="contact" className="page-line border-t py-5 sm:py-7">
       <div className="flex flex-col justify-between gap-7 sm:flex-row sm:items-end">
-        <div><p className="page-muted font-mono text-[10px] uppercase">Have a sharp idea?</p><div className="mt-4 flex flex-wrap items-center gap-4 sm:gap-6"><a href="mailto:hello@magomed.dev" className="inline-block text-2xl font-semibold tracking-[-.07em] underline decoration-1 underline-offset-4 transition hover:opacity-55 sm:text-3xl">Let’s make it real.</a><QuickContactModal /></div></div>
+        <div><p className="page-muted font-mono text-[10px] uppercase">Have a sharp idea?</p><div className="mt-4 flex flex-wrap items-center gap-4 sm:gap-6"><motion.a href="mailto:hello@magomed.dev" whileHover={{ scale: 1.05 }} className="inline-block text-2xl font-semibold tracking-[-.07em] underline decoration-1 underline-offset-4 transition hover:opacity-55 sm:text-3xl">Let’s make it real.</motion.a><QuickContactModal /></div></div>
         <div className="flex gap-4">{[
           { icon: InstagramIcon, label: 'Instagram', href: 'https://instagram.com/m.bronson74' },
           { icon: Send, label: 'Telegram', href: 'https://t.me/mbronsonx' },
           { icon: AtSign, label: 'Email', href: 'mailto:hello@magomed.dev' },
-        ].map(({ icon: Icon, label, href }) => <a key={label} href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noreferrer' : undefined} aria-label={label} className="social-link grid size-9 place-items-center rounded-full border transition"><Icon size={15} /></a>)}</div>
+        ].map(({ icon: Icon, label, href }) => <motion.a key={label} href={href} target={href.startsWith('http') ? '_blank' : undefined} rel={href.startsWith('http') ? 'noreferrer' : undefined} aria-label={label} whileHover={{ scale: 1.05 }} whileTap={{ scale: .96 }} className="social-link grid size-9 place-items-center rounded-full border transition"><Icon size={15} /></motion.a>)}</div>
       </div>
     </footer>
   )
+}
+
+function SectionReveal({ children }: { children: React.ReactNode }) {
+  return <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: .15 }} variants={sectionReveal} transition={{ duration: .65, ease: 'easeOut' }}>{children}</motion.div>
 }

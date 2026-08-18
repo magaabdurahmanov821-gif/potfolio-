@@ -23,9 +23,9 @@ export function QuickContactModal() {
   }
 
   return <>
-    <button type="button" onClick={() => setOpen(true)} className="quick-connect-button inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition" aria-haspopup="dialog">
+    <motion.button type="button" onClick={() => setOpen(true)} whileHover={{ scale: 1.05 }} whileTap={{ scale: .96 }} className="quick-connect-button inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition" aria-haspopup="dialog">
       <QrCode size={14} /> Quick Connect / QR
-    </button>
+    </motion.button>
 
     <AnimatePresence>
       {open && <>
