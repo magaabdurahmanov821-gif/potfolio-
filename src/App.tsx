@@ -78,6 +78,16 @@ const letterReveal: Variants = {
   visible: { opacity: 1, y: 0, rotate: 0, transition: { duration: .86, ease: [0.22, 1, 0.36, 1] } },
 }
 
+const mobileHeroStagger: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: .08 } },
+}
+
+const mobileHeroReveal: Variants = {
+  hidden: { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0, transition: { duration: .38, ease: 'easeOut' } },
+}
+
 const sectionReveal = {
   hidden: { opacity: 0, y: 32 },
   visible: { opacity: 1, y: 0 },
@@ -143,19 +153,27 @@ function Header({ theme, onToggleTheme }: { theme: 'light' | 'dark'; onToggleThe
 }
 
 function Hero() {
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 767px)').matches)
   const pointerX = useMotionValue(0)
   const pointerY = useMotionValue(0)
   const parallaxX = useSpring(pointerX, { stiffness: 45, damping: 18 })
   const parallaxY = useSpring(pointerY, { stiffness: 45, damping: 18 })
 
+  useEffect(() => {
+    const query = window.matchMedia('(max-width: 767px)')
+    const update = () => setIsMobile(query.matches)
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [])
+
   return (
-    <section id="top" className="relative flex min-h-[400px] flex-col justify-between overflow-hidden pb-10 pt-5 sm:min-h-[440px] sm:pt-6 lg:min-h-[465px] lg:pt-7" onPointerMove={event => { const bounds = event.currentTarget.getBoundingClientRect(); pointerX.set((event.clientX - bounds.left - bounds.width / 2) * .025); pointerY.set((event.clientY - bounds.top - bounds.height / 2) * .025) }} onPointerLeave={() => { pointerX.set(0); pointerY.set(0) }}>
+    <section id="top" className="relative flex min-h-[400px] flex-col justify-between overflow-hidden pb-10 pt-5 sm:min-h-[440px] sm:pt-6 lg:min-h-[465px] lg:pt-7" onPointerMove={isMobile ? undefined : event => { const bounds = event.currentTarget.getBoundingClientRect(); pointerX.set((event.clientX - bounds.left - bounds.width / 2) * .025); pointerY.set((event.clientY - bounds.top - bounds.height / 2) * .025) }} onPointerLeave={isMobile ? undefined : () => { pointerX.set(0); pointerY.set(0) }}>
       <motion.div aria-hidden="true" className="pointer-events-none absolute -right-12 top-4 hidden size-64 rounded-full border border-current/10 opacity-35 md:block" style={{ x: parallaxX, y: parallaxY }} animate={{ rotate: 360 }} transition={{ rotate: { duration: 85, repeat: Infinity, ease: 'linear' } }} />
-      <motion.div initial="hidden" animate="visible" variants={heroStagger} className="mt-auto">
-        <motion.h1 variants={letterStagger} className="portfolio-heading display-type max-w-[1000px] text-[clamp(3.9rem,12vw,10.6rem)] leading-[.74] tracking-[-.092em]">
-          <span className="block">{'PORTFOLIO'.split('').map((letter, index) => <motion.span key={`${letter}-${index}`} custom={index} variants={letterReveal} className="inline-block">{letter}</motion.span>)}</span>
+      <motion.div initial={isMobile ? false : 'hidden'} animate={isMobile ? false : 'visible'} variants={isMobile ? undefined : heroStagger} className="mt-auto">
+        <motion.h1 initial={isMobile ? { opacity: 0, y: 46, scale: .985 } : undefined} animate={isMobile ? { opacity: 1, y: 0, scale: 1 } : undefined} transition={isMobile ? { duration: .78, ease: [0.22, 1, 0.36, 1] } : undefined} variants={isMobile ? undefined : letterStagger} className="portfolio-heading display-type max-w-[1000px] text-[clamp(3.9rem,12vw,10.6rem)] leading-[.74] tracking-[-.092em]">
+          <span className="block">{isMobile ? 'PORTFOLIO' : 'PORTFOLIO'.split('').map((letter, index) => <motion.span key={`${letter}-${index}`} custom={index} variants={letterReveal} className="inline-block">{letter}</motion.span>)}</span>
         </motion.h1>
-        <motion.div variants={heroReveal} className="page-line mt-10 flex items-end justify-between border-t pt-3 sm:mt-14">
+        <motion.div initial={isMobile ? { opacity: 0, y: 22 } : undefined} animate={isMobile ? { opacity: 1, y: 0 } : undefined} transition={isMobile ? { duration: .62, delay: .17, ease: [0.22, 1, 0.36, 1] } : undefined} variants={isMobile ? undefined : heroReveal} className="page-line mt-10 flex items-end justify-between border-t pt-3 sm:mt-14">
           <div className="flex items-center gap-2.5">
             <span className="page-fg-bg grid size-9 place-items-center rounded-full font-mono text-[9px] font-medium">M.D.</span>
             <span className="text-xs font-semibold tracking-[-.035em]">Magomed<br className="sm:hidden" /> Abdurahmanov</span>

@@ -6,7 +6,7 @@ import { playClick } from '../../lib/sound'
 
 export function SmoothScrollProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.innerWidth < 768) return
 
     const lenis = new Lenis({ duration: 1.2, smoothWheel: true })
     let frameId = 0
